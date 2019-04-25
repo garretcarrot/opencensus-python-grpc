@@ -1,13 +1,13 @@
-import grpc
 import time
 from concurrent import futures
 
-import defs_pb2_grpc as proto
-import defs_pb2 as pb
-
-from opencensus.trace.ext.gprc import server_interceptor
+import grpc
+from opencensus.ext.grpc import server_interceptor
 from opencensus.trace.samplers import always_on
 from opencensus.trace.tracer import Tracer
+
+import defs_pb2_grpc as proto
+import defs_pb2 as pb
 
 
 class CapitalizeServer(proto.FetchServicer):
