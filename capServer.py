@@ -3,7 +3,6 @@ from concurrent import futures
 
 import grpc
 from opencensus.ext.grpc import server_interceptor
-from opencensus.ext.prometheus import stats_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.tracer import Tracer
 
@@ -11,19 +10,12 @@ import defs_pb2_grpc as proto
 import defs_pb2 as pb
 
 
-prom_exporter = stats_exporter.new_stats_exporter(
-    stats_exporter.Options(namespace="oc_python", port=8000)
-)
-
-
 class CapitalizeServer(proto.FetchServicer):
     def __init__(self, *args, **kwargs):
         super(CapitalizeServer, self).__init__()
 
     def Capitalize(self, request, context):
-        tracer = Tracer(
-            sampler=always_on.AlwaysOnSampler(), exporter=prom_exporter
-        )
+        tracer = Tracer(sampler=always_on.AlwaysOnSampler())
         with tracer.span(name="Capitalize") as span:
             data = request.data
             span.add_annotation("Data in", len=len(data))
@@ -33,7 +25,7 @@ class CapitalizeServer(proto.FetchServicer):
 def main():
     # Set up the gRPC integration/interceptor
     tracer_interceptor = server_interceptor.OpenCensusServerInterceptor(
-        sampler=always_on.AlwaysOnSampler()
+        always_on.AlwaysOnSampler()
     )
 
     server = grpc.server(
