@@ -5,6 +5,10 @@ from concurrent import futures
 import defs_pb2_grpc as proto
 import defs_pb2 as pb
 
+from opencensus.trace.ext.gprc import server_interceptor
+from opencensus.trace.samplers import always_on
+from opencensus.trace.tracer import Tracer
+
 class CapitalizeServer(proto.FetchServicer):
     def __init__(self, *args, **kwargs):
         super(CapitalizeServer, self).__init__()
