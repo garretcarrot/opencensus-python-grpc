@@ -1,13 +1,22 @@
+import os
 import time
 from concurrent import futures
 
 import grpc
+from opencensus.common.transports.async_ import AsyncTransport
 from opencensus.ext.grpc import server_interceptor
+from opencensus.ext.stackdriver import trace_exporter
 from opencensus.trace.samplers import always_on
 from opencensus.trace.tracer import Tracer
 
+
 import defs_pb2_grpc as proto
 import defs_pb2 as pb
+
+exporter = trace_exporter.StackdriverExporter(
+    project_id=os.environ.get("GOOGLE_CLOUD_PROJECT"),
+    transport=AsyncTransport,
+)
 
 
 class CapitalizeServer(proto.FetchServicer):
@@ -15,7 +24,7 @@ class CapitalizeServer(proto.FetchServicer):
         super(CapitalizeServer, self).__init__()
 
     def Capitalize(self, request, context):
-        tracer = Tracer(sampler=always_on.AlwaysOnSampler())
+        tracer = Tracer(sampler=always_on.AlwaysOnSampler(), exporter=exporter)
         with tracer.span(name="Capitalize") as span:
             data = request.data
             span.add_annotation("Data in", len=len(data))
